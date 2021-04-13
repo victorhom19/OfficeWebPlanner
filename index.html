@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin=""></script>
+    <title>Practice</title>
+</head>
+<body>
+
+<header>
+    <div class="inner_header">
+        <img class="logo" src="assets/images/misc/logo.png"></a>
+        <button id="searching-button", onclick="selectMode(ModeEnum.search)">Поиск</button>
+        <button id="edit-button", onclick="selectMode(ModeEnum.edit)">Режим редактирования</button>
+        <button id="view-button", onclick="selectMode(ModeEnum.view)">Режим просмотра</button>
+        <button id="login-button">
+            Авторизация
+            <img class = "icon" src="assets/images/misc/user_white.png" width="30" height="30">
+        </button>
+    </div>
+</header>
+<div class="toolbar" id="search-toolbar">
+
+</div>
+<div class="toolbar" id="edit-toolbar">
+    <nav style="margin-left: 40px">
+        <button class="toolbar-button" onclick="newMap()"><img src="assets/images/misc/add.svg" style="max-height: 100%"></button>
+        <button class="toolbar-button" onclick="deleteObject()"><img src="assets/images/misc/delete.svg" style="max-height: 100%"></button>
+        <button class="toolbar-button" onclick="dragObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
+        <button class="toolbar-button" onclick="resizeObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
+        <button class="toolbar-button" onclick="rotateObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
+    </nav>
+
+</div>
+<div class="toolbar" id="view-toolbar">
+
+</div>
+
+<div class="working_area">
+    <div class="side-menu">
+        <div id="constructor">
+            <h3 class = 'side-menu-header'>Конструктор</h3>
+            <button class="drop-list", onclick="toggleContent(1)">
+                <img id = 'drop-arrow1', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+                Разграничение площади
+            </button>
+            <div id="content1">
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.innerOffice)">Внутренний кабинет</button>
+                <button class="constructor-element", onclick="">Зона</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.door)">Дверь кабинета</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.window)">Окно</button>
+            </div>
+            <button class="drop-list", onclick="toggleContent(2)">
+                <img id = 'drop-arrow2', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+                Рабочие объекты
+            </button>
+            <div id="content2">
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.workstation)">Рабочее место</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.conversationTable)">Стол для переговоров</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.ledPanel)">Настенная LED панель</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.mfd)">МФУ</button>
+            </div>
+            <button class="drop-list", onclick="toggleContent(3)">
+                <img id = 'drop-arrow3', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+                Разное
+            </button>
+            <div id="content3">
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.vendingMachine)">Вендинг</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.atm)">Банкомат</button>
+                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.fireHydrant)">Пожарный гидрант</button>
+            </div>
+        </div>
+        <div id="information">
+            <h3 class = 'side-menu-header'>Информация</h3>
+        </div>
+        <div id="search">
+            <h3 class = 'side-menu-header'>
+                <div style="width: 250px; height: 50px; display: flex; align-items: center; justify-content: center; background: #575757; border-radius: 10px; margin: 0 auto">
+                    <input id="searchbar" placeholder="Поиск..." style="padding-left: 10px; font-size: 18px">
+                    <button class="search-button" style="background: #575757"><img src="assets/images/misc/magnifier_white.png" width="20px" style="margin: 0 auto"></button>
+                </div>
+            </h3>
+            <div style="width: 100%; height: 500px; display: flex; align-items: center; justify-content: center;">
+
+            </div>
+
+        </div>
+    </div>
+    <div id="map"></div>
+</div>
+</body>
+
+
+
+
+<script>
+    //Interaction mode block
+    const ModeEnum = Object.freeze({
+        'view' : 1,
+        'edit' : 2,
+        'search' : 3,
+    })
+
+    var currentMode;
+    selectMode(ModeEnum.view);
+
+    const ObjectsEnum = Object.freeze({
+        'innerOffice' : 1,
+        'zone' : 2,
+        'door' : 3,
+        'window' : 4,
+        'workstation' : 5,
+        'conversationTable': 6,
+        'ledPanel' : 7,
+        'mfd' : 8,
+        'vendingMachine' : 9,
+        'atm' : 10,
+        'fireHydrant' : 11
+
+
+    })
+
+
+    //Creating map itself
+    var map = L.map('map', {crs: L.CRS.Simple, zoomControl: false, scrollWheelZoom: false, attributionControl:false});
+    var bound_x = document.getElementById('map').offsetWidth;
+    var bound_y = document.getElementById('map').offsetHeight;
+    var bounds = [[0,0],[bound_y,bound_x]];
+    L.imageOverlay('assets/images/misc/map_template.png', bounds).addTo(map);
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds);
+
+
+    var icon;
+    var nowDeleting = false;
+    var nowDragging = false;
+    var nowResizing = false;
+
+
+    map.on({
+        drag: function() {
+            map.panInsideBounds(bounds, { animate: false });
+        },
+        click: function (e) {
+            var marker = L.marker(e.latlng, {icon: icon});
+            if (!(nowDeleting || nowDragging || nowResizing)) {
+                marker.addTo(map);
+            }
+            var isDragged = false;
+            var isResized = false;
+            marker.on({
+                mousedown : function () {
+                    if (nowDeleting) {
+                        marker.remove()
+                        nowDeleting = false;
+                    }
+                    if (nowDragging) {
+                        isDragged = true;
+                    }
+                    if (nowResizing) {
+                        isResized = true;
+                    }
+                    map.on('mousemove', function (e) {
+                        if (isDragged) {
+                            marker.setLatLng(e.latlng);
+                        }
+                    });
+                    map.on('mouseup', function (e) {
+                        if (isResized) {
+                            var icon = marker.options.icon;
+                            var xSize = Math.floor(Math.abs(e.latlng.lat - marker.getLatLng().lat) * 2);
+                            var ySize = Math.floor(Math.abs(e.latlng.lng - marker.getLatLng().lng) * 2);
+                            var finalSize = Math.max(xSize, ySize);
+                            icon.options.iconSize = [finalSize, finalSize];
+                            icon.options.iconAnchor = [finalSize / 2, finalSize / 2];
+                            marker.setIcon(icon);
+                            console.log(marker.getLatLng().lat, marker.getLatLng().lng, e.latlng)
+                            isResized = false;
+                        }
+                    })
+                },
+                mouseup: function () {
+                    isDragged = false;
+                }
+            });
+            if (!(isDragged)) {
+                nowDragging = false;
+            }
+            if (!(isResized)) {
+                nowResizing = false;
+            }
+        }
+    });
+    map.dragging.disable();
+
+    function selectMode(mode) {
+        currentMode = mode;
+        var searchMenu = document.getElementById('search');
+        var constructorMenu = document.getElementById('constructor');
+        var viewMenu = document.getElementById('information');
+        var searchToolbar = document.getElementById('search-toolbar');
+        var constructorToolbar = document.getElementById('edit-toolbar');
+        var viewToolbar = document.getElementById('view-toolbar');
+
+
+        switch (currentMode) {
+            case ModeEnum.search:
+                document.getElementById('searching-button').style.border = "2px solid #e30613";
+                document.getElementById('view-button').style.border = "2px solid #fff";
+                document.getElementById('edit-button').style.border = "2px solid #fff";
+
+                searchMenu.style.display = "block";
+                constructorMenu.style.display = "none";
+                viewMenu.style.display = 'none';
+
+                searchToolbar.style.display = "flex";
+                constructorToolbar.style.display = "none";
+                viewToolbar.style.display = 'none';
+                break;
+            case ModeEnum.edit:
+                document.getElementById('searching-button').style.border = "2px solid #fff";
+                document.getElementById('view-button').style.border = "2px solid #fff";
+                document.getElementById('edit-button').style.border = "2px solid #e30613";
+
+                searchMenu.style.display = "none";
+                constructorMenu.style.display = "block";
+                viewMenu.style.display = "none";
+
+                searchToolbar.style.display = 'none';
+                constructorToolbar.style.display = "flex";
+                viewToolbar.style.display = 'none';
+                break;
+            case ModeEnum.view:
+                document.getElementById('searching-button').style.border = "2px solid #fff";
+                document.getElementById('view-button').style.border = "2px solid #e30613";
+                document.getElementById('edit-button').style.border = "2px solid #fff";
+
+                searchMenu.style.display = "none";
+                constructorMenu.style.display = "none";
+                viewMenu.style.display = "block";
+
+                searchToolbar.style.display = 'none';
+                constructorToolbar.style.display = 'none';
+                viewToolbar.style.display = "flex";
+                break;
+        }
+    }
+
+
+    var isShowingContent1 = false;
+    var isShowingContent2 = false;
+    var isShowingContent3 = false;
+
+    function toggleContent(numberOfContent) {
+        var content = document.getElementById('content' + numberOfContent);
+        var isShowingCurrentContent;
+        switch (numberOfContent) {
+            case 1:
+                isShowingCurrentContent = isShowingContent1;
+                break;
+            case 2:
+                isShowingCurrentContent = isShowingContent2;
+                break;
+            case 3:
+                isShowingCurrentContent = isShowingContent3;
+                break;
+        }
+        if (isShowingCurrentContent) {
+            document.getElementById('drop-arrow' + numberOfContent).style.transform = "";
+            content.style.maxHeight = "0px";
+            content.style.transition = "max-height 0.4s ease-in-out";
+        } else {
+            document.getElementById('drop-arrow' + numberOfContent).style.transform = "rotate(90deg)";
+            content.style.maxHeight = "300px";
+            content.style.transition = "max-height 0.4s ease-in-out";
+
+        }
+        isShowingCurrentContent = !isShowingCurrentContent;
+        switch (numberOfContent) {
+            case 1:
+                isShowingContent1 = isShowingCurrentContent;
+                break;
+            case 2:
+                isShowingContent2 = isShowingCurrentContent;
+                break;
+            case 3:
+                isShowingContent3 = isShowingCurrentContent;
+                break;
+        }
+    }
+
+    function newMap() {
+        //Save old Map {...}
+
+        map.eachLayer(function (layer) {
+            console.log(layer);
+            map.removeLayer(layer);
+        });
+        map.fitBounds(bounds);
+        map.setMaxBounds(bounds);
+
+        L.imageOverlay('assets/images/misc/map_template.png', bounds).addTo(map);
+
+    }
+
+    function constructorSelect(object) {
+        var xSize, ySize;
+        switch (object) {
+            case ObjectsEnum.innerOffice:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/inner_office.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+                });
+            break;
+            case ObjectsEnum.zone:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.door:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/door.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.window:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/window.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+
+            case ObjectsEnum.workstation:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/workstation.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.conversationTable:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/conversation-table.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.ledPanel:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/led-panel.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.mfd:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/mfd.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+
+            case ObjectsEnum.vendingMachine:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/vending-machine.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.atm:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/atm.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+            case ObjectsEnum.fireHydrant:
+                xSize = 100;
+                ySize = 100;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/fire-hydrant.svg",
+                    iconSize:     [xSize, ySize],
+                    iconAnchor:   [xSize / 2, ySize / 2]
+
+                });
+                break;
+
+        }
+    }
+
+    function deleteObject() {
+        nowDeleting = true;
+    }
+
+    function dragObject() {
+        nowDragging = true;
+    }
+    
+    function resizeObject() {
+        nowResizing = true;
+    }
+
+
+
+
+</script>
+</html>
