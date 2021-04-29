@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin=""></script>
-    <title>Practice</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+          integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+            integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+            crossorigin=""></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <title>Office Web Planner</title>
 </head>
 <body>
 
 <header>
     <div class="inner_header">
         <img class="logo" src="assets/images/misc/logo.png"></a>
-        <button id="searching-button", onclick="selectMode(ModeEnum.search)">Поиск</button>
-        <button id="edit-button", onclick="selectMode(ModeEnum.edit)">Режим редактирования</button>
-        <button id="view-button", onclick="selectMode(ModeEnum.view)">Режим просмотра</button>
+        <button id="searching-button" onclick="selectMode(ModeEnum.search)">Поиск</button>
+        <button id="edit-button" onclick="selectMode(ModeEnum.edit)">Режим редактирования</button>
+        <button id="view-button" onclick="selectMode(ModeEnum.view)">Режим просмотра</button>
         <button id="login-button">
             Авторизация
-            <img class = "icon" src="assets/images/misc/user_white.png" width="30" height="30">
+            <img class="icon" src="assets/images/misc/user_white.png" width="30" height="30">
         </button>
     </div>
 </header>
@@ -25,12 +30,33 @@
 
 </div>
 <div class="toolbar" id="edit-toolbar">
-    <nav style="margin-left: 40px">
-        <button class="toolbar-button" onclick="newMap()"><img src="assets/images/misc/add.svg" style="max-height: 100%"></button>
-        <button class="toolbar-button" onclick="deleteObject()"><img src="assets/images/misc/delete.svg" style="max-height: 100%"></button>
-        <button class="toolbar-button" onclick="dragObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
-        <button class="toolbar-button" onclick="resizeObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
-        <button class="toolbar-button" onclick="rotateObject()"><img src="assets/images/misc/move.svg/" style="max-height: 100%"></button>
+    <nav>
+        <button class="toolbar-button" id="clearMapButton" onclick="clearMap()">
+            <img src="assets/images/misc/add.svg" style="max-height: 100%"></button>
+        <button class="toolbar-button" id="deleteObjectButton"
+                onclick="toggleCurrentAction(ActionsEnum.deleting)">
+            <img src="assets/images/misc/delete.svg" style="max-height: 100%">
+        </button>
+        <button class="toolbar-button" id="dragObjectButton"
+                onclick="toggleCurrentAction(ActionsEnum.dragging)">
+            <img src="assets/images/misc/move.svg" style="max-height: 100%">
+        </button>
+        <button class="toolbar-button" id="resizeObjectButton"
+                onclick="toggleCurrentAction(ActionsEnum.resizing)">
+            <img src="assets/images/misc/resize.svg" style="max-height: 100%">
+        </button>
+        <button class="toolbar-button" id="rotateObjectButton"
+                onclick="toggleCurrentAction(ActionsEnum.rotating)">
+            <img src="assets/images/misc/rotate.svg" style="max-height: 100%">
+        </button>
+        <button class="toolbar-button" id="scaleUpGridButton"
+                onclick="scaleGrid(ScalingEnum.up)">
+            <img src="assets/images/misc/plus.svg" style="max-height: 100%">
+        </button>
+        <button class="toolbar-button" id="scaleDownGridButton"
+                onclick="scaleGrid(ScalingEnum.down)">
+            <img src="assets/images/misc/minus.svg" style="max-height: 100%">
+        </button>
     </nav>
 
 </div>
@@ -41,45 +67,72 @@
 <div class="working_area">
     <div class="side-menu">
         <div id="constructor">
-            <h3 class = 'side-menu-header'>Конструктор</h3>
-            <button class="drop-list", onclick="toggleContent(1)">
-                <img id = 'drop-arrow1', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+            <h3 class='side-menu-header'>Конструктор</h3>
+            <button class="drop-list" onclick="toggleContent(1)">
+                <img id='drop-arrow1' src="assets/images/misc/next.svg" width="15px" style="margin:10px">
                 Разграничение площади
             </button>
             <div id="content1">
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.innerOffice)">Внутренний кабинет</button>
-                <button class="constructor-element", onclick="">Зона</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.door)">Дверь кабинета</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.window)">Окно</button>
+                <button class="constructor-element" id="wallButton"
+                        onclick="constructorSelect(ObjectsEnum.innerOffice)">
+                    Внутренний кабинет
+                </button>
+                <button class="constructor-element" id="zoneButton" onclick="constructorSelect(ObjectsEnum.zone)">
+                    Зона
+                </button>
+                <button class="constructor-element" id="doorButton" onclick="constructorSelect(ObjectsEnum.door)">
+                    Дверь кабинета
+                </button>
+                <button class="constructor-element" id="windowButton" onclick="constructorSelect(ObjectsEnum.window)">
+                    Окно
+                </button>
             </div>
-            <button class="drop-list", onclick="toggleContent(2)">
-                <img id = 'drop-arrow2', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+            <button class="drop-list" , onclick="toggleContent(2)">
+                <img id='drop-arrow2' , src="assets/images/misc/next.svg" , width="15px" style="margin:10px">
                 Рабочие объекты
             </button>
             <div id="content2">
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.workstation)">Рабочее место</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.conversationTable)">Стол для переговоров</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.ledPanel)">Настенная LED панель</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.mfd)">МФУ</button>
+                <button class="constructor-element" id="workstationButton"
+                        onclick="constructorSelect(ObjectsEnum.workstation)">Рабочее
+                    место
+                </button>
+                <button class="constructor-element" id="tableButton"
+                        onclick="constructorSelect(ObjectsEnum.conversationTable)">Стол
+                    для переговоров
+                </button>
+                <button class="constructor-element" id="ledButton" onclick="constructorSelect(ObjectsEnum.ledPanel)">
+                    Настенная LED
+                    панель
+                </button>
+                <button class="constructor-element" id="mfdButton" onclick="constructorSelect(ObjectsEnum.mfd)">МФУ
+                </button>
             </div>
-            <button class="drop-list", onclick="toggleContent(3)">
-                <img id = 'drop-arrow3', src="assets/images/misc/next.svg", width = "15px" style="margin:10px">
+            <button class="drop-list" , onclick="toggleContent(3)">
+                <img id='drop-arrow3' , src="assets/images/misc/next.svg" , width="15px" style="margin:10px">
                 Разное
             </button>
             <div id="content3">
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.vendingMachine)">Вендинг</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.atm)">Банкомат</button>
-                <button class="constructor-element", onclick="constructorSelect(ObjectsEnum.fireHydrant)">Пожарный гидрант</button>
+                <button class="constructor-element" id="vendingButton"
+                        onclick="constructorSelect(ObjectsEnum.vendingMachine)">Вендинг
+                </button>
+                <button class="constructor-element" id="atmButton" onclick="constructorSelect(ObjectsEnum.atm)">
+                    Банкомат
+                </button>
+                <button class="constructor-element" id="hydrantButton"
+                        onclick="constructorSelect(ObjectsEnum.fireHydrant)">Пожарный
+                    гидрант
+                </button>
             </div>
         </div>
         <div id="information">
-            <h3 class = 'side-menu-header'>Информация</h3>
+            <h3 class='side-menu-header'>Информация</h3>
         </div>
         <div id="search">
-            <h3 class = 'side-menu-header'>
+            <h3 class='side-menu-header'>
                 <div style="width: 250px; height: 50px; display: flex; align-items: center; justify-content: center; background: #575757; border-radius: 10px; margin: 0 auto">
                     <input id="searchbar" placeholder="Поиск..." style="padding-left: 10px; font-size: 18px">
-                    <button class="search-button" style="background: #575757"><img src="assets/images/misc/magnifier_white.png" width="20px" style="margin: 0 auto"></button>
+                    <button class="search-button" style="background: #575757"><img
+                            src="assets/images/misc/magnifier_white.png" width="20px" style="margin: 0 auto"></button>
                 </div>
             </h3>
             <div style="width: 100%; height: 500px; display: flex; align-items: center; justify-content: center;">
@@ -93,107 +146,16 @@
 </body>
 
 
-
-
 <script>
-    //Interaction mode block
+
     const ModeEnum = Object.freeze({
-        'view' : 1,
-        'edit' : 2,
-        'search' : 3,
+        'view': 1,
+        'edit': 2,
+        'search': 3,
     })
 
     var currentMode;
     selectMode(ModeEnum.view);
-
-    const ObjectsEnum = Object.freeze({
-        'innerOffice' : 1,
-        'zone' : 2,
-        'door' : 3,
-        'window' : 4,
-        'workstation' : 5,
-        'conversationTable': 6,
-        'ledPanel' : 7,
-        'mfd' : 8,
-        'vendingMachine' : 9,
-        'atm' : 10,
-        'fireHydrant' : 11
-
-
-    })
-
-
-    //Creating map itself
-    var map = L.map('map', {crs: L.CRS.Simple, zoomControl: false, scrollWheelZoom: false, attributionControl:false});
-    var bound_x = document.getElementById('map').offsetWidth;
-    var bound_y = document.getElementById('map').offsetHeight;
-    var bounds = [[0,0],[bound_y,bound_x]];
-    L.imageOverlay('assets/images/misc/map_template.png', bounds).addTo(map);
-    map.fitBounds(bounds);
-    map.setMaxBounds(bounds);
-
-
-    var icon;
-    var nowDeleting = false;
-    var nowDragging = false;
-    var nowResizing = false;
-
-
-    map.on({
-        drag: function() {
-            map.panInsideBounds(bounds, { animate: false });
-        },
-        click: function (e) {
-            var marker = L.marker(e.latlng, {icon: icon});
-            if (!(nowDeleting || nowDragging || nowResizing)) {
-                marker.addTo(map);
-            }
-            var isDragged = false;
-            var isResized = false;
-            marker.on({
-                mousedown : function () {
-                    if (nowDeleting) {
-                        marker.remove()
-                        nowDeleting = false;
-                    }
-                    if (nowDragging) {
-                        isDragged = true;
-                    }
-                    if (nowResizing) {
-                        isResized = true;
-                    }
-                    map.on('mousemove', function (e) {
-                        if (isDragged) {
-                            marker.setLatLng(e.latlng);
-                        }
-                    });
-                    map.on('mouseup', function (e) {
-                        if (isResized) {
-                            var icon = marker.options.icon;
-                            var xSize = Math.floor(Math.abs(e.latlng.lat - marker.getLatLng().lat) * 2);
-                            var ySize = Math.floor(Math.abs(e.latlng.lng - marker.getLatLng().lng) * 2);
-                            var finalSize = Math.max(xSize, ySize);
-                            icon.options.iconSize = [finalSize, finalSize];
-                            icon.options.iconAnchor = [finalSize / 2, finalSize / 2];
-                            marker.setIcon(icon);
-                            console.log(marker.getLatLng().lat, marker.getLatLng().lng, e.latlng)
-                            isResized = false;
-                        }
-                    })
-                },
-                mouseup: function () {
-                    isDragged = false;
-                }
-            });
-            if (!(isDragged)) {
-                nowDragging = false;
-            }
-            if (!(isResized)) {
-                nowResizing = false;
-            }
-        }
-    });
-    map.dragging.disable();
 
     function selectMode(mode) {
         currentMode = mode;
@@ -248,7 +210,6 @@
         }
     }
 
-
     var isShowingContent1 = false;
     var isShowingContent2 = false;
     var isShowingContent3 = false;
@@ -291,131 +252,543 @@
         }
     }
 
-    function newMap() {
-        //Save old Map {...}
+    const ObjectsEnum = Object.freeze({
+        'innerOffice': 1,
+        'zone': 2,
+        'door': 3,
+        'window': 4,
+        'workstation': 5,
+        'conversationTable': 6,
+        'ledPanel': 7,
+        'mfd': 8,
+        'vendingMachine': 9,
+        'atm': 10,
+        'fireHydrant': 11
+
+    });
+
+    const ActionsEnum = Object.freeze({
+        'adding': 1,
+        'deleting': 2,
+        'dragging': 3,
+        'drawingWall': 4,
+        'drawingZone': 5,
+        'resizing': 6,
+        'rotating': 7
+    });
+
+    const ScalingEnum = Object.freeze({
+        'up': 1,
+        'down': 2
+    });
+
+
+    var map = new L.map('map', {
+        crs: L.CRS.Simple,
+        zoomControl: false,
+        scrollWheelZoom: false,
+        attributionControl: false,
+        renderer: new L.SVG({
+            padding: 2
+        })
+    });
+    var bounds = [[0, 0], [3072, 4096]];
+    var imageOverlay = new L.imageOverlay('assets/images/misc/grid_64.png', bounds).addTo(map);
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds);
+    map.doubleClickZoom.disable();
+
+
+    var gridSize = 64
+
+
+    var icon;
+
+    var currentAction = new Map([
+        [ActionsEnum.adding, false],
+        [ActionsEnum.deleting, false],
+        [ActionsEnum.dragging, false],
+        [ActionsEnum.drawingWall, false],
+        [ActionsEnum.drawingZone, false],
+        [ActionsEnum.resizing, false],
+        [ActionsEnum.rotating, false],
+
+    ]);
+
+
+    function toggleCurrentAction(action) {
+        if (!(action === ActionsEnum.adding || action === ActionsEnum.drawingWall || action === ActionsEnum.drawingZone)) {
+            toggleCurrentConstructorElement('clear');
+        }
+        for (let key of currentAction.keys()) {
+            if (key === action) {
+                currentAction.set(key, !currentAction.get(key));
+                if (currentAction.get(key)) {
+                    map.dragging.disable();
+                } else {
+                    map.dragging.enable();
+                }
+            } else {
+                currentAction.set(key, false);
+            }
+        }
+        toggleHighlightToolbarButton(action)
+    }
+
+    function toggleHighlightToolbarButton() {
+        let buttonToActionRelationMap = new Map([
+            [ActionsEnum.deleting, 'deleteObjectButton'],
+            [ActionsEnum.dragging, 'dragObjectButton'],
+            [ActionsEnum.resizing, 'resizeObjectButton'],
+            [ActionsEnum.rotating, 'rotateObjectButton'],
+        ]);
+        for (let key of currentAction.keys()) {
+            let button = document.getElementById(buttonToActionRelationMap.get(key))
+            if (button != null) {
+                if (currentAction.get(key)) {
+                    button.style.borderBottom = "2px solid #e30613";
+                } else {
+                    button.style.borderBottom = "2px solid #fff";
+                }
+            }
+
+        }
+
+
+    }
+
+    var currentConstructorElement = new Map([
+        [ObjectsEnum.innerOffice, false],
+        [ObjectsEnum.zone, false],
+        [ObjectsEnum.door, false],
+        [ObjectsEnum.window, false],
+        [ObjectsEnum.workstation, false],
+        [ObjectsEnum.conversationTable, false],
+        [ObjectsEnum.ledPanel, false],
+        [ObjectsEnum.mfd, false],
+        [ObjectsEnum.vendingMachine, false],
+        [ObjectsEnum.atm, false],
+        [ObjectsEnum.fireHydrant, false],
+    ]);
+
+    function toggleCurrentConstructorElement(element) {
+        for (let key of currentConstructorElement.keys()) {
+            if (key === element) {
+                currentConstructorElement.set(key, !currentConstructorElement.get(key));
+                if (currentConstructorElement.get(key)) {
+                    map.dragging.disable();
+                } else {
+                    map.dragging.enable();
+                }
+            } else {
+                currentConstructorElement.set(key, false);
+            }
+        }
+        toggleHighlightConstructorButton()
+    }
+
+    function toggleHighlightConstructorButton() {
+        let buttonToElementRelationMap = new Map([
+            [ObjectsEnum.innerOffice, 'wallButton'],
+            [ObjectsEnum.zone, 'zoneButton'],
+            [ObjectsEnum.door, 'doorButton'],
+            [ObjectsEnum.window, 'windowButton'],
+            [ObjectsEnum.workstation, 'workstationButton'],
+            [ObjectsEnum.conversationTable, 'tableButton'],
+            [ObjectsEnum.ledPanel, 'ledButton'],
+            [ObjectsEnum.mfd, 'mfdButton'],
+            [ObjectsEnum.vendingMachine, 'vendingButton'],
+            [ObjectsEnum.atm, 'atmButton'],
+            [ObjectsEnum.fireHydrant, 'hydrantButton'],
+        ]);
+        for (let key of currentConstructorElement.keys()) {
+            let button = document.getElementById(buttonToElementRelationMap.get(key))
+            if (button != null) {
+                if (currentConstructorElement.get(key)) {
+                    button.style.borderBottom = "2px solid #e30613";
+                    button.style.color = "#e30613";
+                } else {
+                    button.style.borderBottom = "2px solid #fff";
+                    button.style.color = "#000";
+                }
+            }
+
+        }
+    }
+
+    var wallPoints = [];
+    var wall = null;
+    var zonePoints = [];
+    var zone = null;
+    var zoneColors = ['#0000DD', '#008800', '#DD0000', '#EEEE00',
+        '#00FFFF', '#FF00FF', '#8800FF', '#00FF66',
+        '#FF8800', '#663300'];
+    var zoneColorIndex = 0;
+
+    map.on({
+        click: function (e) {
+            var markerRotation = 0;
+            var markerSize = gridSize;
+            var marker = L.marker([e.latlng.lat - e.latlng.lat % gridSize + gridSize / 2,
+                e.latlng.lng - e.latlng.lng % gridSize + gridSize / 2], {icon: icon});
+            if (currentAction.get(ActionsEnum.adding)) {
+                marker.addTo(map);
+            }
+            var isDragged = false;
+            marker.on({
+                mousedown: function () {
+                    if (currentAction.get(ActionsEnum.deleting)) {
+                        marker.remove()
+                    }
+
+                    if (currentAction.get(ActionsEnum.dragging)) {
+                        isDragged = true;
+                    }
+                    map.on('mousemove', function (e) {
+                        if (isDragged) {
+                            marker.setLatLng([e.latlng.lat - e.latlng.lat % gridSize + gridSize / 2,
+                                e.latlng.lng - e.latlng.lng % gridSize + gridSize / 2]);
+                        }
+                    });
+
+                    if (currentAction.get(ActionsEnum.resizing)) {
+
+                        var scaleUpIcon = L.icon({
+                            iconUrl: "assets/images/misc/plus.svg",
+                            iconSize: [20, 20],
+                            iconAnchor: [0, 20]
+                        });
+
+                        var scaleUpMarker = L.marker([marker.getLatLng().lat - marker.options.icon.options.iconSize[0] / 2,
+                                marker.getLatLng().lng + marker.options.icon.options.iconSize[1] / 2],
+                            {icon: scaleUpIcon});
+
+                        scaleUpMarker.addTo(map);
+
+
+                        var scaleDownIcon = L.icon({
+                            iconUrl: "assets/images/misc/minus.svg",
+                            iconSize: [20, 20],
+                            iconAnchor: [-25, 20]
+                        });
+
+                        var scaleDownMarker = L.marker([marker.getLatLng().lat - marker.options.icon.options.iconSize[0] / 2,
+                                marker.getLatLng().lng + marker.options.icon.options.iconSize[1] / 2],
+                            {icon: scaleDownIcon});
+
+                        scaleDownMarker.addTo(map);
+
+
+                        var cancelIcon = L.icon({
+                            iconUrl: "assets/images/misc/cancel.svg",
+                            iconSize: [20, 20],
+                            iconAnchor: [-50, 20]
+                        });
+
+                        var cancelMarker = L.marker([marker.getLatLng().lat - marker.options.icon.options.iconSize[0] / 2,
+                                marker.getLatLng().lng + marker.options.icon.options.iconSize[1] / 2],
+                            {icon: cancelIcon});
+
+                        cancelMarker.addTo(map);
+
+
+                        scaleUpMarker.on('click', function () {
+                            if (markerSize < 256) {
+                                markerSize *= 2;
+                                var icon = marker.options.icon;
+                                var xSize = icon.options.iconSize[1] *= 2;
+                                var ySize = icon.options.iconSize[0] *= 2;
+                                icon.options.iconSize = [ySize, xSize];
+                                icon.options.iconAnchor = [ySize / 2, xSize / 2];
+                                marker.setIcon(icon);
+
+                                for (var resizeMarker of [scaleUpMarker, scaleDownMarker, cancelMarker]) {
+                                    resizeMarker.setLatLng([marker.getLatLng().lat - marker.options.icon.options.iconSize[0] / 2,
+                                        marker.getLatLng().lng + marker.options.icon.options.iconSize[1] / 2]);
+                                }
+                            }
+
+
+                        });
+
+                        scaleDownMarker.on('click', function () {
+                            if (markerSize > 16) {
+                                markerSize /= 2;
+                                var icon = marker.options.icon;
+                                var xSize = icon.options.iconSize[1] /= 2;
+                                var ySize = icon.options.iconSize[0] /= 2;
+                                icon.options.iconSize = [ySize, xSize];
+                                icon.options.iconAnchor = [ySize / 2, xSize / 2];
+                                marker.setIcon(icon);
+
+                                for (var resizeMarker of [scaleUpMarker, scaleDownMarker, cancelMarker]) {
+                                    resizeMarker.setLatLng([marker.getLatLng().lat - marker.options.icon.options.iconSize[0] / 2,
+                                        marker.getLatLng().lng + marker.options.icon.options.iconSize[1] / 2]);
+                                }
+                            }
+
+
+                        });
+
+                        cancelMarker.on('click', function () {
+                            for (var resizeMarker of [scaleUpMarker, scaleDownMarker, cancelMarker]) {
+                                resizeMarker.remove();
+                            }
+                            toggleCurrentAction(ActionsEnum.resizing);
+                        });
+
+
+                    }
+
+                },
+                mouseup: function () {
+                    isDragged = false;
+                },
+                click: function () {
+                    if (currentAction.get(ActionsEnum.rotating)) {
+                        markerRotation = (markerRotation + 90) % 360;
+                        marker.setRotationAngle(markerRotation);
+                    }
+
+                }
+
+            });
+
+            if (currentAction.get(ActionsEnum.drawingWall) || currentAction.get(ActionsEnum.drawingZone)) {
+                wallPoints.push([Math.round(e.latlng.lat / gridSize) * gridSize,
+                    Math.round(e.latlng.lng / gridSize) * gridSize]);
+                if (wallPoints.length === 2) {
+                    if (currentAction.get(ActionsEnum.drawingZone)) {
+                        wall = new L.Polyline(wallPoints, {
+                            color: zoneColors[zoneColorIndex],
+                            weight: 3,
+                            opacity: 0.5,
+                            smoothFactor: 0.1,
+                        });
+                        wall.on({
+                            mousedown: function () {
+                                if (currentAction.get(ActionsEnum.deleting)) {
+                                    this.remove();
+                                }
+                            }
+                        });
+                        wall.addTo(map);
+                    } else {
+                        wall = new L.Polyline(wallPoints, {
+                            color: 'black',
+                            weight: 3,
+                            opacity: 0.5,
+                            smoothFactor: 0.1,
+                        });
+                        wall.on({
+                            mousedown: function () {
+                                if (currentAction.get(ActionsEnum.deleting)) {
+                                    this.remove();
+                                }
+                            }
+                        });
+                        wall.addTo(map);
+                    }
+                } else if (wallPoints.length > 2) {
+                    let firstPoint = wallPoints[0];
+                    let prelastPoint = wallPoints[wallPoints.length - 2];
+                    let lastPoint = wallPoints[wallPoints.length - 1];
+
+                    if (currentAction.get(ActionsEnum.drawingZone)) {
+                        if (firstPoint[0] === lastPoint[0] &&
+                            firstPoint[1] === lastPoint[1]) {
+                            console.log(1)
+                            wall.remove();
+                            wall = new L.Polyline(wallPoints, {
+                                color: zoneColors[zoneColorIndex],
+                                stroke: false,
+                                fillOpacity: 0.1,
+                                fill: true,
+                                smoothFactor: 0.1,
+                            });
+                            wall.on({
+                                mousedown: function () {
+                                    if (currentAction.get(ActionsEnum.deleting)) {
+                                        this.remove();
+                                    }
+                                }
+                            });
+                            zoneColorIndex = (zoneColorIndex + 1) % zoneColors.length
+                            wall.addTo(map);
+                            wallPoints = [];
+                            wall = null;
+                        } else {
+                            wall.remove();
+                            wall = new L.Polyline(wallPoints, {
+                                color: zoneColors[zoneColorIndex],
+                                weight: 3,
+                                opacity: 0.5,
+                                smoothFactor: 0.1,
+                            });
+                            wall.on({
+                                mousedown: function () {
+                                    if (currentAction.get(ActionsEnum.deleting)) {
+                                        this.remove();
+                                    }
+                                }
+                            });
+                            wall.addTo(map);
+                        }
+                    }
+                    if (currentAction.get(ActionsEnum.drawingWall)) {
+                        if (prelastPoint[0] === lastPoint[0] &&
+                            prelastPoint[1] === lastPoint[1]) {
+                            console.log(2)
+                            wallPoints = [];
+                            wall = null;
+                        } else {
+                            wall.remove();
+                            wall = new L.Polyline(wallPoints, {
+                                color: 'black',
+                                weight: 3,
+                                opacity: 0.5,
+                                smoothFactor: 0.1,
+                            });
+                            wall.on({
+                                mousedown: function () {
+                                    if (currentAction.get(ActionsEnum.deleting)) {
+                                        this.remove();
+                                    }
+                                }
+                            });
+                            wall.addTo(map);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+
+    function clearMap() {
+        //Save old Map {???}
 
         map.eachLayer(function (layer) {
-            console.log(layer);
             map.removeLayer(layer);
         });
         map.fitBounds(bounds);
         map.setMaxBounds(bounds);
+        toggleCurrentAction('clear');
 
-        L.imageOverlay('assets/images/misc/map_template.png', bounds).addTo(map);
+        imageOverlay = L.imageOverlay('assets/images/misc/grid_64.png', bounds).addTo(map);
 
     }
 
     function constructorSelect(object) {
+        toggleCurrentAction(ActionsEnum.adding);
         var xSize, ySize;
         switch (object) {
             case ObjectsEnum.innerOffice:
-                xSize = 100;
-                ySize = 100;
-                icon = L.icon({
-                    iconUrl: "assets/images/constructor/inner_office.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
-                });
-            break;
+                toggleCurrentAction(ActionsEnum.drawingWall)
+                toggleCurrentConstructorElement(ObjectsEnum.innerOffice);
+                break;
             case ObjectsEnum.zone:
-                xSize = 100;
-                ySize = 100;
-                icon = L.icon({
-                    iconUrl: "assets/images/constructor/",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
-
-                });
+                toggleCurrentAction(ActionsEnum.drawingZone);
+                toggleCurrentConstructorElement(ObjectsEnum.zone);
                 break;
             case ObjectsEnum.door:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.door);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
-                    iconUrl: "assets/images/constructor/door.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconUrl: "assets/images/constructor/door.png",
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.window:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.window);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/window.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
 
             case ObjectsEnum.workstation:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.workstation);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/workstation.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.conversationTable:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.conversationTable);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/conversation-table.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.ledPanel:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.ledPanel);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/led-panel.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.mfd:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.mfd);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/mfd.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
 
             case ObjectsEnum.vendingMachine:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.vendingMachine);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/vending-machine.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.atm:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.atm);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/atm.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
             case ObjectsEnum.fireHydrant:
-                xSize = 100;
-                ySize = 100;
+                toggleCurrentConstructorElement(ObjectsEnum.fireHydrant);
+                xSize = gridSize;
+                ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/fire-hydrant.svg",
-                    iconSize:     [xSize, ySize],
-                    iconAnchor:   [xSize / 2, ySize / 2]
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
 
                 });
                 break;
@@ -423,19 +796,34 @@
         }
     }
 
-    function deleteObject() {
-        nowDeleting = true;
-    }
 
-    function dragObject() {
-        nowDragging = true;
-    }
-    
-    function resizeObject() {
-        nowResizing = true;
-    }
+    function scaleGrid(scaleDirection) {
 
+        if (gridSize < 256 && scaleDirection === ScalingEnum.up) {
+            gridSize *= 2;
+        } else if (gridSize > 16 && scaleDirection === ScalingEnum.down) {
+            gridSize /= 2;
+        }
+        map.removeLayer(imageOverlay);
+        switch (gridSize) {
+            case 16:
+                imageOverlay = L.imageOverlay('assets/images/misc/grid_16.png', bounds).addTo(map);
+                break;
+            case 32:
+                imageOverlay = L.imageOverlay('assets/images/misc/grid_32.png', bounds).addTo(map);
+                break;
+            case 64:
+                imageOverlay = L.imageOverlay('assets/images/misc/grid_64.png', bounds).addTo(map);
+                break;
+            case 128:
+                imageOverlay = L.imageOverlay('assets/images/misc/grid_128.png', bounds).addTo(map);
+                break;
+            case 256:
+                imageOverlay = new L.imageOverlay('assets/images/misc/grid_256.png', bounds).addTo(map);
+                break;
+        }
 
+    }
 
 
 </script>

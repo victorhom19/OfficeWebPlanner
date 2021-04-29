@@ -75,19 +75,24 @@ header {
     border-bottom: 1px solid #d4d4d4;
     display: none;
     align-items: center;
+    justify-content: left;
+    padding-left: 30px;
 }
 
 .toolbar-button {
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    background: #ffffff;
-    border: 0;
+    box-sizing: border-box;
+    padding: 2px;
+    width: 35px;
+    height: 35px;
+    border: 2px solid #fff;
+    background: #fff;
     outline: none;
     display: inline-flex;
     align-items: center;
-    margin: 0 5px 0 5px;
+    margin: 0 3px 0 3px;
+    transition: 0.6s;
 }
+
 
 .working_area {
     width:100%;
@@ -173,23 +178,21 @@ header {
 }
 
 .constructor-element {
-    width: 100%;
+    width: calc(100% - 80px);
     height: 30px;
     background: #ffffff;
-    border:0;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    border: 2px solid #fff;
+    margin: 5px 40px 10px;
     display: flex;
     align-items: center;
     justify-content: left;
     outline: none;
     font-size: 18px;
-    padding-left: 50px;
+    padding-left: 10px;
+    transition: all 0.4s ease-in-out;
 }
 
-.constructor-element:focus {
-    background: #ccc;
-}
+
 
 #searchbar {
     height: 30px;
@@ -211,6 +214,7 @@ header {
     padding: 0;
     border:0;
 }
+
 
 
 
