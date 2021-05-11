@@ -57,6 +57,10 @@
                 onclick="scaleGrid(ScalingEnum.down)">
             <img src="assets/images/misc/minus.svg" style="max-height: 100%">
         </button>
+        <button class="toolbar-button" id="editInfoButton"
+                onclick="toggleCurrentAction(ActionsEnum.editingInfo)">
+            <img src="assets/images/misc/edit.svg" style="max-height: 100%">
+        </button>
     </nav>
 
 </div>
@@ -122,7 +126,27 @@
                         onclick="constructorSelect(ObjectsEnum.fireHydrant)">Пожарный
                     гидрант
                 </button>
+                <button class="constructor-element" id="staffButton"
+                        onclick="constructorSelect(ObjectsEnum.staff)">Сотрудник
+                </button>
             </div>
+        </div>
+        <div id="constructor-information" style="display: none">
+            <h3 class='side-menu-header'>Редактирование информации</h3>
+            <div>
+                <div style="width: 100%; display: flex; justify-content: center">
+                    <form style="margin: 10px 0 10px 0">
+                        <label for="nameField">Название</label>
+                        <input type="text" id="nameField" name="nameField"><br>
+                        <label for="descriptionField" >Описание</label>
+                        <input type="text" id="descriptionField" name="descriptionField"><br>
+                    </form>
+                </div>
+                <div style="width: 100%; display: flex; justify-content: center">
+                    <button id="saveInformationButton">Сохранить</button>
+                </div>
+            </div>
+
         </div>
         <div id="information">
             <h3 class='side-menu-header'>Информация</h3>
@@ -151,7 +175,8 @@
     const ModeEnum = Object.freeze({
         'view': 1,
         'edit': 2,
-        'search': 3,
+        'editInformation': 3,
+        'search': 4,
     })
 
     var currentMode;
@@ -161,6 +186,7 @@
         currentMode = mode;
         var searchMenu = document.getElementById('search');
         var constructorMenu = document.getElementById('constructor');
+        var constructorInfoMenu = document.getElementById('constructor-information')
         var viewMenu = document.getElementById('information');
         var searchToolbar = document.getElementById('search-toolbar');
         var constructorToolbar = document.getElementById('edit-toolbar');
@@ -175,6 +201,7 @@
 
                 searchMenu.style.display = "block";
                 constructorMenu.style.display = "none";
+                constructorInfoMenu.style.display = "none";
                 viewMenu.style.display = 'none';
 
                 searchToolbar.style.display = "flex";
@@ -188,6 +215,21 @@
 
                 searchMenu.style.display = "none";
                 constructorMenu.style.display = "block";
+                constructorInfoMenu.style.display = "none";
+                viewMenu.style.display = "none";
+
+                searchToolbar.style.display = 'none';
+                constructorToolbar.style.display = "flex";
+                viewToolbar.style.display = 'none';
+                break;
+            case ModeEnum.editInformation:
+                document.getElementById('searching-button').style.border = "2px solid #fff";
+                document.getElementById('view-button').style.border = "2px solid #fff";
+                document.getElementById('edit-button').style.border = "2px solid #e30613";
+
+                searchMenu.style.display = "none";
+                constructorMenu.style.display = "none";
+                constructorInfoMenu.style.display = "block";
                 viewMenu.style.display = "none";
 
                 searchToolbar.style.display = 'none';
@@ -201,6 +243,7 @@
 
                 searchMenu.style.display = "none";
                 constructorMenu.style.display = "none";
+                constructorInfoMenu.style.display = "none";
                 viewMenu.style.display = "block";
 
                 searchToolbar.style.display = 'none';
@@ -263,7 +306,8 @@
         'mfd': 8,
         'vendingMachine': 9,
         'atm': 10,
-        'fireHydrant': 11
+        'fireHydrant': 11,
+        'staff': 12
 
     });
 
@@ -273,8 +317,9 @@
         'dragging': 3,
         'drawingWall': 4,
         'drawingZone': 5,
-        'resizing': 6,
-        'rotating': 7
+        'editingInfo': 6,
+        'resizing': 7,
+        'rotating': 8
     });
 
     const ScalingEnum = Object.freeze({
@@ -310,6 +355,7 @@
         [ActionsEnum.dragging, false],
         [ActionsEnum.drawingWall, false],
         [ActionsEnum.drawingZone, false],
+        [ActionsEnum.editingInfo, false],
         [ActionsEnum.resizing, false],
         [ActionsEnum.rotating, false],
 
@@ -328,6 +374,13 @@
                 } else {
                     map.dragging.enable();
                 }
+                if (key === ActionsEnum.editingInfo) {
+                    if (currentAction.get(key)) {
+                        selectMode(ModeEnum.editInformation)
+                    } else {
+                        selectMode(ModeEnum.edit)
+                    }
+                }
             } else {
                 currentAction.set(key, false);
             }
@@ -339,6 +392,7 @@
         let buttonToActionRelationMap = new Map([
             [ActionsEnum.deleting, 'deleteObjectButton'],
             [ActionsEnum.dragging, 'dragObjectButton'],
+            [ActionsEnum.editingInfo, 'editInfoButton'],
             [ActionsEnum.resizing, 'resizeObjectButton'],
             [ActionsEnum.rotating, 'rotateObjectButton'],
         ]);
@@ -369,6 +423,7 @@
         [ObjectsEnum.vendingMachine, false],
         [ObjectsEnum.atm, false],
         [ObjectsEnum.fireHydrant, false],
+        [ObjectsEnum.staff, false],
     ]);
 
     function toggleCurrentConstructorElement(element) {
@@ -400,6 +455,7 @@
             [ObjectsEnum.vendingMachine, 'vendingButton'],
             [ObjectsEnum.atm, 'atmButton'],
             [ObjectsEnum.fireHydrant, 'hydrantButton'],
+            [ObjectsEnum.staff, 'staffButton'],
         ]);
         for (let key of currentConstructorElement.keys()) {
             let button = document.getElementById(buttonToElementRelationMap.get(key))
@@ -430,17 +486,24 @@
             var markerRotation = 0;
             var markerSize = gridSize;
             var marker = L.marker([e.latlng.lat - e.latlng.lat % gridSize + gridSize / 2,
-                e.latlng.lng - e.latlng.lng % gridSize + gridSize / 2], {icon: icon});
+                e.latlng.lng - e.latlng.lng % gridSize + gridSize / 2],
+                {   icon: icon,
+                    markerType: "",
+                    name: "",
+                    description: "",
+
+
+                });
             if (currentAction.get(ActionsEnum.adding)) {
                 marker.addTo(map);
             }
             var isDragged = false;
+
             marker.on({
                 mousedown: function () {
                     if (currentAction.get(ActionsEnum.deleting)) {
                         marker.remove()
                     }
-
                     if (currentAction.get(ActionsEnum.dragging)) {
                         isDragged = true;
                     }
@@ -549,6 +612,26 @@
                         markerRotation = (markerRotation + 90) % 360;
                         marker.setRotationAngle(markerRotation);
                     }
+                    if (currentAction.get(ActionsEnum.editingInfo)) {
+                        var old_element = document.getElementById("saveInformationButton");
+                        var new_element = old_element.cloneNode(true);
+                        old_element.parentNode.replaceChild(new_element, old_element);
+
+                        var nameField = document.getElementById("nameField")
+                        nameField.value = this.options.name
+                        var descriptionField = document.getElementById("descriptionField")
+                        descriptionField.value = this.options.description
+                        var saveButton = document.getElementById("saveInformationButton")
+                        var listener = function () {
+                            marker.options.name = nameField.value
+                            marker.options.description = descriptionField.value
+                            nameField.value = ""
+                            descriptionField.value = ""
+                            saveButton.removeEventListener('click', listener, false)
+                        }
+                        saveButton.addEventListener('click', listener, false)
+                    }
+
 
                 }
 
@@ -787,6 +870,18 @@
                 ySize = gridSize;
                 icon = L.icon({
                     iconUrl: "assets/images/constructor/fire-hydrant.svg",
+                    iconSize: [xSize, ySize],
+                    iconAnchor: [xSize / 2, ySize / 2]
+
+                });
+                break;
+
+            case ObjectsEnum.staff:
+                toggleCurrentConstructorElement(ObjectsEnum.staff);
+                xSize = gridSize;
+                ySize = gridSize;
+                icon = L.icon({
+                    iconUrl: "assets/images/constructor/staff.svg",
                     iconSize: [xSize, ySize],
                     iconAnchor: [xSize / 2, ySize / 2]
 
